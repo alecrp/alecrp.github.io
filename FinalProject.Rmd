@@ -1,0 +1,336 @@
+
+In this guide to Data Science, we will look at how to load a table from the internet, combine that table with another table based on common values, and scale values in the table. I will walk you through step by step explaining what each line does. 
+The first section of code loads the Wikipedia page that contains the highest grossing films of all time. The first two lines import the tidyr library and the rvest library. We will be using the pipelining functionality from tidyr and will use rvest to load the HTML. Line nine saves a variable called url containing the address of the Wikipedia article as a string. The next three lines starting at line 11 show a pipeline where the variable returned by the first statement, url, is forwarded to the next line. Once the string from url is forwarded, read_html goes to that address and loads the HTML into RStudio. That HTML is then forwarded to html_nodes("table") which will return all the tables contained in the HTML. Those tables are then saved into temp as <- is the assignment operator in R. Line 15 takes table 1 from temp and converts it into a table that can be used by R. The final line, 17, allows the resulting table to be displayed. (217 words)
+
+```{r}
+library(tidyr)
+library(rvest)
+
+url <- "https://en.wikipedia.org/wiki/List_of_highest-grossing_films"
+
+temp <- url %>%
+  read_html %>%
+  html_nodes("table")
+
+dl_tab <- html_table(temp[[1]])
+
+dl_tab
+```
+
+This next section of code will tidy the data and fix any errors that we can find. Because some errors are not known until we start joining the data, some of these errors are not obvious until then. The pipeline starting at line 25 removes the column containing the peak rank and the links to references. These are not needed for any analysis we are doing. Line 28 replaces one of the ranks where it was in the table as 12F instead of just 12. The next six commands replace movie titles that i found out later do match up with the data that I merge it with later. To do all these commands, you replace the column with itself and if an element matches the second argument in str_replace, it is replaced with the third argument. (137 words)
+
+```{r}
+library(tidyverse)
+
+dl_tab <- dl_tab %>%
+  select("Rank","Title","Worldwide gross","Year")
+
+dl_tab$Rank <- str_replace(dl_tab$Rank, "12F", "12")
+dl_tab$Title <- str_replace(dl_tab$Title, "Harry Potter and the Philosopher's Stone", "Harry Potter and the Sorcerer's Stone")
+dl_tab$Title <- str_replace(dl_tab$Title, "Star Wars: The Force Awakens", "Star Wars: Episode VII - The Force Awakens")
+dl_tab$Title <- str_replace(dl_tab$Title, "The Avengers", "Marvel's The Avengers")
+dl_tab$Title <- str_replace(dl_tab$Title, "Harry Potter and the Deathly Hallows - Part 2", "Harry Potter and the Deathly Hallows - Part 2")
+dl_tab$Title <- str_replace(dl_tab$Title, "Star Wars: Episode I - The Phantom Menace", "Star Wars: Episode I - The Phantom Menace")
+dl_tab$Title <- str_replace(dl_tab$Title, "Harry Potter and the Deathly Hallows - Part 1", "Harry Potter and the Deathly Hallows - Part 1")
+```
+
+Now that we have the top 50 highest grossing movies ever, we need to gather up the data we are going to merge it with. I decided to look at the Rotten Tomatoes' score for the top 100 highest rated movies for every year. After looking at the highest grossing movies, we are only going to need Rotten Tomato scores for 1993, 1994, 1997, 1999, and 2001-2018. These operation are similar to the first operations we did. The first line assigns the url to a variable named url plus the year. That url is then pipelined to load the HTML, select the node called .table, convert that to a table that RStudio is able to use, and select the two columns we need, title and the rotten tomato score. Every one of these operations creates a new table for each year. (141 words) 
+
+```{r}
+url1993 <- "https://www.rottentomatoes.com/top/bestofrt/?year=1993"
+dl_tab1993 <- url1993 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url1994 <- "https://www.rottentomatoes.com/top/bestofrt/?year=1994"
+dl_tab1994 <- url1994 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url1997 <- "https://www.rottentomatoes.com/top/bestofrt/?year=1997"
+dl_tab1997 <- url1997 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url1999 <- "https://www.rottentomatoes.com/top/bestofrt/?year=1999"
+dl_tab1999 <- url1999 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2001 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2001"
+dl_tab2001 <- url2001 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2002 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2002"
+dl_tab2002 <- url2002 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2003 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2003"
+dl_tab2003 <- url2003 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table %>%
+  select("Title","RatingTomatometer")
+
+url2004 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2004"
+dl_tab2004 <- url2004 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2005 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2005"
+dl_tab2005 <- url2005 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2006 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2006"
+dl_tab2006 <- url2006 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2007 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2007"
+dl_tab2007 <- url2007 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2008 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2008"
+dl_tab2008 <- url2008 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2009 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2009"
+dl_tab2009 <- url2009 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2010 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2010"
+dl_tab2010 <- url2010 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2011 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2011"
+dl_tab2011 <- url2011 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2012 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2012"
+dl_tab2012 <- url2012 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2013 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2013"
+dl_tab2013 <- url2013 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2014 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2014"
+dl_tab2014 <- url2014 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2015 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2015"
+dl_tab2015 <- url2015 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2016 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2016"
+dl_tab2016 <- url2016 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2017 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2017"
+dl_tab2017 <- url2017 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+url2018 <- "https://www.rottentomatoes.com/top/bestofrt/?year=2018"
+dl_tab2018 <- url2018 %>%
+  read_html() %>%
+  html_node(".table") %>%
+  html_table() %>%
+  select("Title","RatingTomatometer")
+
+```
+
+Now that we have the 100 highest rated movies for each of the years we use, we now have to clean up that data. If you look at the tables, each movie title has the name and the year appended onto the end. Because the data that we have for the highest grossing movies does not have this added on, we need to remove it from the Rotten Tomatoes' data so we are able to match the data up later. Again in this section, we are going to do the same operation for each year we have saved. In the operation, we are replacing the title column with a modified version of the current title. For each title, we take the current one and remove the last seven characters. We do seven because the year is four characters, the two parentheses are two, and the space after the actual title is one. (152 words)
+
+```{r}
+dl_tab1993$Title = substr(dl_tab1993$Title,1,nchar(dl_tab1993$Title)-7)
+dl_tab1994$Title = substr(dl_tab1994$Title,1,nchar(dl_tab1994$Title)-7)
+dl_tab1997$Title = substr(dl_tab1997$Title,1,nchar(dl_tab1997$Title)-7)
+dl_tab1999$Title = substr(dl_tab1999$Title,1,nchar(dl_tab1999$Title)-7)
+dl_tab2001$Title = substr(dl_tab2001$Title,1,nchar(dl_tab2001$Title)-7)
+dl_tab2002$Title = substr(dl_tab2002$Title,1,nchar(dl_tab2002$Title)-7)
+dl_tab2003$Title = substr(dl_tab2003$Title,1,nchar(dl_tab2003$Title)-7)
+dl_tab2004$Title = substr(dl_tab2004$Title,1,nchar(dl_tab2004$Title)-7)
+dl_tab2005$Title = substr(dl_tab2005$Title,1,nchar(dl_tab2005$Title)-7)
+dl_tab2006$Title = substr(dl_tab2006$Title,1,nchar(dl_tab2006$Title)-7)
+dl_tab2007$Title = substr(dl_tab2007$Title,1,nchar(dl_tab2007$Title)-7)
+dl_tab2008$Title = substr(dl_tab2008$Title,1,nchar(dl_tab2008$Title)-7)
+dl_tab2009$Title = substr(dl_tab2009$Title,1,nchar(dl_tab2009$Title)-7)
+dl_tab2010$Title = substr(dl_tab2010$Title,1,nchar(dl_tab2010$Title)-7)
+dl_tab2011$Title = substr(dl_tab2011$Title,1,nchar(dl_tab2011$Title)-7)
+dl_tab2012$Title = substr(dl_tab2012$Title,1,nchar(dl_tab2012$Title)-7)
+dl_tab2013$Title = substr(dl_tab2013$Title,1,nchar(dl_tab2013$Title)-7)
+dl_tab2014$Title = substr(dl_tab2014$Title,1,nchar(dl_tab2014$Title)-7)
+dl_tab2015$Title = substr(dl_tab2015$Title,1,nchar(dl_tab2015$Title)-7)
+dl_tab2016$Title = substr(dl_tab2016$Title,1,nchar(dl_tab2016$Title)-7)
+dl_tab2017$Title = substr(dl_tab2017$Title,1,nchar(dl_tab2017$Title)-7)
+dl_tab2018$Title = substr(dl_tab2018$Title,1,nchar(dl_tab2018$Title)-7)
+
+```
+
+Now that we have all the data and cleaned it up, we are now ready to merge the Rotten Tomato scores with the highest grossing movies. First, we join every year of tomato scores individually with the highest grossing table and save the result. For this, we do an inner join which will only keep the rows that have matches in both the tables. After we do all these, we have several tables that each contain the merged data for movies for a certain year. The hard part now is to join all 23 of the tables we have created. To do that, we use the join_all operation which allows us to join multiple tables at once. Because we have movies from the highest grossing list that were not in the highest 100 rated movies the year they were released, we also have to join the original highest grossing table. We need to make sure this join is a full join because we want all the individual movies from each year to join with the old ones from the highest grossing list, but also the ones from the highest grossing list that have no match. After this section, we finally have a table that contains the highest grossing movies with Rotten Tomato scores. (213 words)
+
+```{r message = FALSE}
+library(tidyverse)
+library(plyr)
+
+dl_tab2 <- dl_tab %>% inner_join(dl_tab1993, by="Title")
+dl_tab3 <- dl_tab %>% inner_join(dl_tab1994, by="Title")
+dl_tab4 <- dl_tab %>% inner_join(dl_tab1997, by="Title")
+dl_tab5 <- dl_tab %>% inner_join(dl_tab1999, by="Title")
+dl_tab6 <- dl_tab %>% inner_join(dl_tab2001, by="Title")
+dl_tab7 <- dl_tab %>% inner_join(dl_tab2002, by="Title")
+dl_tab8 <- dl_tab %>% inner_join(dl_tab2003, by="Title")
+dl_tab9 <- dl_tab %>% inner_join(dl_tab2004, by="Title")
+dl_tab10 <- dl_tab %>% inner_join(dl_tab2005, by="Title")
+dl_tab11 <- dl_tab %>% inner_join(dl_tab2006, by="Title")
+dl_tab12 <- dl_tab %>% inner_join(dl_tab2007, by="Title")
+dl_tab13 <- dl_tab %>% inner_join(dl_tab2008, by="Title")
+dl_tab14 <- dl_tab %>% inner_join(dl_tab2009, by="Title")
+dl_tab15 <- dl_tab %>% inner_join(dl_tab2010, by="Title")
+dl_tab16 <- dl_tab %>% inner_join(dl_tab2011, by="Title")
+dl_tab17 <- dl_tab %>% inner_join(dl_tab2012, by="Title")
+dl_tab18 <- dl_tab %>% inner_join(dl_tab2013, by="Title")
+dl_tab19 <- dl_tab %>% inner_join(dl_tab2014, by="Title")
+dl_tab20 <- dl_tab %>% inner_join(dl_tab2015, by="Title")
+dl_tab21 <- dl_tab %>% inner_join(dl_tab2016, by="Title")
+dl_tab22 <- dl_tab %>% inner_join(dl_tab2017, by="Title")
+dl_tab23 <- dl_tab %>% inner_join(dl_tab2018, by="Title")
+
+
+df <- join_all(list(dl_tab2,dl_tab3,dl_tab4,dl_tab5,dl_tab6,dl_tab7,dl_tab8,dl_tab9,dl_tab9,dl_tab10,dl_tab11,dl_tab12,dl_tab13,dl_tab14,dl_tab15,dl_tab16,dl_tab17,dl_tab18,dl_tab19,dl_tab20,dl_tab21,dl_tab22,dl_tab23,dl_tab), type = 'full')
+
+
+```
+
+After joining the tables, we have to do a little more tidying to the data. We import the stringr library so that we can convert the amount of money the movies made and the Rotten Tomato from a string to a number we can do operations to. The first operation does the same thing we did for the movie titles, it removes the last character from each element, the percent sign, and then calls as.numeric to convert it to a number. The next operation converts the amount the movie made to a number. We cannot do the same operation though as we did for the score. Instead, we use the str_replace_all operation to replace the dollar sign and any commas in the value with nothing. Also, one of the values had F8 appended onto the end and that needed to be replaced too. We now have numeric values we can actually use. (152 words)
+
+```{r}
+library(stringr)
+
+df$RatingTomatometer = as.numeric(substr(df$RatingTomatometer,1,nchar(df$RatingTomatometer)-1))
+df$`Worldwide gross` <- as.numeric(str_replace_all(df$`Worldwide gross`, "\\$|,|F8", ""))
+```
+
+Because a few of these movies are fairly old, we have to account for inflation since they have come out. This is one of the trickiest operations. We load the library quantmod in order to easily capture the inflation rates from the Federal Reserve Economic Data website. Line 274 gets that data, the Consumer Price Index for All Urban Consumers: All Items (CPIAUCSL). Line 276 then selects just the data starting at 1990 and going up to 28 years later. The next few lines convert the data from a dollar amount for each year to a fraction that signifies the amount a dollar in 2018 is worth in every other year. Line 284 adds another column to that inflation table that contains just the year. This is going to be used later for the actual calculation on the movie profit. Because the data for inflation is only up to 2017, we have to add a row for 2018 that just has a value of 1 for the inflation amount. Line 287 - 289 create this row and append it onto the table. (182 words)
+
+```{r message = FALSE, warning = FALSE}
+library(quantmod)
+library(lubridate)
+
+getSymbols("CPIAUCSL", src='FRED')
+set.seed(1)
+p <- xts(rnorm(28, mean=10, sd=3), seq(from=as.Date('1990-12-01'), by='years', length.out=28))
+colnames(p) <- "price"
+avg.cpi <- apply.yearly(CPIAUCSL, mean)
+cf <- avg.cpi/as.numeric(avg.cpi['2018'])
+dat <- merge(p, cf, all=FALSE)
+dat$adj <- dat[, 1] * dat[, 2]
+tail(dat)
+
+dat$Year <- year(dat)
+dat <- data.frame(date=index(dat), coredata(dat))
+
+de<-data.frame("2018-12-1","1",1,"1",2018)
+names(de)<-c("date","price","CPIAUCSL","adj","Year")
+dat <- rbind(dat,de)
+```
+
+We are now ready to calculate the new worldwide gross with inflation accounted for. We first import the data.table library so that we can more easily operate over the tables. Line 297 converts the inflation table and the movie table to a data table. Line 298 is where all the calculating happens. df[] is the operation to add a new column to df, our movie table. Having dat as the first argument allows us to use it in the calculation. The middle part creates a new column called adjusted that is equal to the previous worldwide gross multiplied by 1 divided by the inflation rate. We use i.CPIAUCSL to let the operation know to loom in dat for CPIAUCSL. The final part tells the operation to use the Year variable as the link between the inflation data and the movie data. (141 words)
+
+```{r message = FALSE, warning = FALSE}
+library(data.table)
+
+setDT(df); setDT(dat) 
+df[dat, adjusted:=`Worldwide gross` * (1/i.CPIAUCSL), on="Year"]
+
+```
+
+Now that we have all our data, we can make a plot to visualize the result. This first plot has the Rotten Tomatoes score along the X axis and the adjusted worldwide gross along the Y axis. This plot also only contains the data that was in the 100 highest rated movies for each year since those were the only ones that had a Rotten Tomatoes score. From this graph we can see that, for this set of movies, the Rotten Tomatoes score does have an effect on worldwide gross as it actually decreases the amount earned. This is the most likely the result because it is such a small data set. If we were to do this graph with all movies, it would most likely show that movies with a higher score make more money. (136 words)
+
+```{r}
+df %>%
+  filter(!is.na(RatingTomatometer)) %>%
+  ggplot(mapping=aes(y=adjusted , x=RatingTomatometer)) +
+  geom_point() + geom_smooth(method = "lm")
+```
+
+This final graph shows adjusted worldwide gross on the Y axis and the year along the X axis. This graph does include the movies that did not get match up to a Rotten Tomatoes score because we are not using that variable. To compare those two groups, we color coded the point to red for the ones that have a score and blue for the ones that do not. From this limited set of data, we can see that as time progresses, the amount that the highest grossing movies have been making has gone down. This is most likely because the two highest grossing ones have not been very recent, so they keep the scores for the past high and the newer movies have been replacing the lower grossing movies from the past. (133 words)
+
+```{r}
+df %>%
+  ggplot(mapping=aes(y=adjusted , x=Year)) +
+  geom_point(mapping=aes(color=is.na(RatingTomatometer))) + 
+  labs(col= "Not Top 100") + geom_smooth(method = "lm")
+```
+
+Now that we have gone through data collection, curration, tidying, and analysis, you have the tools needed to do it on your own. If you have any questions or want to go deeper into R, you can find more information at https://www.rdocumentation.org/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
